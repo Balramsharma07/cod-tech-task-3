@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_LEN 100
+
+// List of keywords
+const char *keywords[] = {
+    "int", "float", "if", "else", "while", "for", "return", "void", "main", "char"
+};
+int numKeywords = sizeof(keywords) / sizeof(keywords[0]);
+
+// Function to check if a string is a keyword
+int isKeyword(const char *str) {
+    for (int i = 0; i < numKeywords; i++) {
+        if (strcmp(str, keywords[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Function to check if a character is an operator
+int isOperator(char ch) {
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '=' || ch == '<' || ch == '>');
+}
+
+// Function to analyze the input file
+void lexicalAnalysis(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error: Could not open file %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    char ch, buffer[MAX_LEN];
+    int i = 0;
+
+    printf("Lexical Analysis Result:\n");
+    printf("--------------------------\n");
+
+    while ((ch = fgetc(file)) != EOF) {
+        // Check for keywords or identifiers
+        if (isalpha(ch)) {
+            buffer[i++] = ch;
+            while ((ch = fgetc(file)) != EOF && (isalnum(ch) || ch == '_')) {
+                buffer[i++] = ch;
+            }
+            buffer[i] = '\0';
+            i = 0;
+
+            if (isKeyword(buffer)) {
+                printf("Keyword: %s\n", buffer);
+            } else {
+                printf("Identifier: %s\n", buffer);
+            }
+            if (ch != EOF) ungetc(ch, file);  // Push back the last character
+        }
+        // Check for operators
+        else if (isOperator(ch)) {
+            printf("Operator: %c\n", ch);
+        }
+        // Skip white spaces and other characters
+        else if (isspace(ch)) {
+            continue;
+        }
+        // Handle other symbols (optional)
+        else {
+            printf("Symbol: %c\n", ch);
+        }
+    }
+
+    fclose(file);
+}
+
+int main() {
+    char filename[MAX_LEN];
+
+    printf("Enter the input file name: ");
+    scanf("%s", filename);
+
+    lexicalAnalysis(filename);
+
+    return 0;
+}
